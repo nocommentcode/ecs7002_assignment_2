@@ -7,7 +7,7 @@ from non_tabular_model_free_rl import linear_sarsa, linear_q_learning
 
 
 def main():
-    seed = 1
+    seed = 0
     lake = SMALL_LAKE
 
     env = FrozenLake(lake, slip=0.1, max_steps=16, seed=seed)
