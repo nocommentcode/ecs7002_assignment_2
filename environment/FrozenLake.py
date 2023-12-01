@@ -1,5 +1,6 @@
 
-from Environement import Environment
+from typing import List, Optional
+from environment.Environement import Environment
 import numpy as np
 
 from utils import _printoptions, play
@@ -25,7 +26,7 @@ class FrozenLake(Environment):
     HOLE_SYMBOL = "#"
     GOAL_SYMBOL = "$"
 
-    def __init__(self, lake, slip, max_steps, seed=None):
+    def __init__(self, lake: List[List[str]], slip: float, max_steps: int, seed: Optional[int] = None) -> None:
         """
         lake: A matrix that represents the lake. For example:
         lake =  [['&', '.', '.', '.'],
@@ -55,7 +56,7 @@ class FrozenLake(Environment):
                              max_steps, pi, seed=seed)
 
     def build_transition_probs(self, n_states, n_actions):
-        # state, next state, action
+        # next state, state, action
         transitions = np.zeros((n_states, n_states, n_actions))
 
         # all actions in absorbing state -> absorbing state

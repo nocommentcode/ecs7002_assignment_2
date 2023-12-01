@@ -1,6 +1,7 @@
 from typing import Tuple
-from Environement import Environment
 import numpy as np
+
+from environment.Environement import Environment
 
 
 def policy_evaluation(env: Environment, policy: np.ndarray, gamma: float, theta: float, max_iterations: int) -> np.ndarray:
@@ -13,7 +14,7 @@ def policy_evaluation(env: Environment, policy: np.ndarray, gamma: float, theta:
         env: the environment
         policy: the policy to evaluate
         gamma: the discount factor
-        theta: the convergence threshold
+        theta: the convergence thresholds
         max_iterations: the maximum number of iterations
 
     returns:

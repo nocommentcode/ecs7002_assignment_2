@@ -1,6 +1,6 @@
 from typing import Tuple
-from Environement import Environment
 import numpy as np
+from environment.Environement import Environment
 
 
 def e_greedy(Q: np.ndarray, s: int, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
@@ -41,7 +41,7 @@ def sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon
         seed: random seed
 
     returns:
-        policy and value-function
+        policy, value-function
     """
     random_state = np.random.RandomState(seed)
 
@@ -87,7 +87,7 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
     Q Learning Control algorithm.
     Updates Q table using tuples of (s, a, r, s_)
 
-    Q(s, a) <- Q(s, a) + a * [r + gamma * max_a_(Q(s_, a_)) - Q(s, a)]
+    Q(s, a) <- Q(s, a) + a * [r + gamma * max_a_(Q(s_)) - Q(s, a)]
 
     args:
         env: the environment

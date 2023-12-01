@@ -2,6 +2,10 @@ import numpy as np
 
 
 class LinearWrapper:
+    """
+    A wrapper for environments to encode states as linear features.
+    """
+
     def __init__(self, env):
         self.env = env
 

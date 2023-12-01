@@ -1,7 +1,9 @@
 import contextlib
 import numpy as np
+import matplotlib.pyplot as plt
 
-# Configures numpy print options
+
+from typing import List
 
 
 @contextlib.contextmanager
