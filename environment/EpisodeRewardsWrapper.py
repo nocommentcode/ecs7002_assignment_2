@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from environment.Environement import Environment
 
@@ -12,8 +12,15 @@ class EpisodeRewardsWrapper:
         self.env = env
         self.episode_rewards = []
         self.current_episode_rewards = None
-        self.n_actions = self.env.n_actions
-        self.n_states = self.env.n_states
+
+    def __getattribute__(self, __name: str) -> Any:
+        """
+        Pass calls to the wrapped environment.
+        """
+        try:
+            return super().__getattribute__(__name)
+        except AttributeError:
+            return getattr(self.env, __name)
 
     def reset(self):
         # append last episode's rewards to list of all episode rewards

@@ -82,7 +82,6 @@ def run_q_learning(env, ax):
 def run_linear_sarsa(env, ax):
     linear_env = LinearWrapper(env)
     wrapped_env = EpisodeRewardsWrapper(linear_env)
-    wrapped_env.n_features = linear_env.n_features
     gamma = 0.9
     epsilon = 0.5
     eta = 0.5
@@ -98,7 +97,6 @@ def run_linear_sarsa(env, ax):
 def run_linear_q_learning(env, ax):
     linear_env = LinearWrapper(env)
     wrapped_env = EpisodeRewardsWrapper(linear_env)
-    wrapped_env.n_features = linear_env.n_features
 
     gamma = 0.9
     epsilon = 0.5
@@ -115,7 +113,6 @@ def run_linear_q_learning(env, ax):
 def run_dqn(env, ax):
     image_env = FrozenLakeImageWrapper(env)
     wrapped_env = EpisodeRewardsWrapper(image_env)
-    wrapped_env.state_shape = image_env.state_shape
 
     gamma = 0.9
     max_episodes = 4000
