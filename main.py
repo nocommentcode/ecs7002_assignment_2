@@ -19,14 +19,14 @@ def main():
     print('')
 
     print('## Policy iteration')
-    policy, value = policy_iteration(
+    policy, value, _ = policy_iteration(
         env, gamma, theta=0.001, max_iterations=128)
     env.render(policy, value)
 
     print('')
 
     print('## Value iteration')
-    policy, value = value_iteration(
+    policy, value, _ = value_iteration(
         env, gamma, theta=0.001, max_iterations=128)
     env.render(policy, value)
 

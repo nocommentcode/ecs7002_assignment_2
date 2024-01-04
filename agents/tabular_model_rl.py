@@ -44,7 +44,7 @@ def policy_evaluation(env: Environment, policy: np.ndarray, gamma: float, theta:
             delta = max(delta, abs(v - V[s]))
 
         # check for convergance
-        if delta < theta:
+        if delta <= theta:
             break
 
     return V
@@ -68,7 +68,7 @@ def policy_improvement(env: Environment, V: np.ndarray, gamma: float) -> np.ndar
     policy = np.zeros(env.n_states, dtype=int)
 
     for s in range(env.n_states):
-        action_values = np.zeros(env.n_actions)
+        action_values = np.zeros(env.n_actions, dtype=np.float32)
         for a in range(env.n_actions):
             # compute probabilities and rewards
             S_ = [s_ for s_ in range(env.n_states)]
@@ -85,7 +85,7 @@ def policy_improvement(env: Environment, V: np.ndarray, gamma: float) -> np.ndar
     return policy
 
 
-def policy_iteration(env: Environment, gamma: float, theta: float, max_iterations: int, policy: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
+def policy_iteration(env: Environment, gamma: float, theta: float, max_iterations: int, policy: np.ndarray = None, iteration: int = 0) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     In-place iterative deterministic policy evaluation.
     Interleaves policy evaluation and policy improvement.
@@ -99,7 +99,9 @@ def policy_iteration(env: Environment, gamma: float, theta: float, max_iteration
         policy: the policy to evaluate
 
     returns:
-        the optimal policy and the state-value function
+        the optimal policy
+        the state-value function
+        the number of iterations untill covergence
     """
     # initialise policy if not supplied
     if policy is None:
@@ -115,13 +117,17 @@ def policy_iteration(env: Environment, gamma: float, theta: float, max_iteration
 
     # check for convergance
     if np.all(policy == improved_policy):
-        return policy, V
+        return policy, V, iteration
+
+    # reached maximum iterations
+    if iteration >= max_iterations:
+        return policy, V, iteration
 
     # recursive call
-    return policy_iteration(env, gamma, theta, max_iterations, improved_policy)
+    return policy_iteration(env, gamma, theta, max_iterations, improved_policy, iteration+1)
 
 
-def value_iteration(env: Environment, gamma: float, theta: float, max_iterations: int, V: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
+def value_iteration(env: Environment, gamma: float, theta: float, max_iterations: int, V: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     In-place iterative value iteration.
     Will run untill convergance or max iterations and return optimal policy and state-value function.
@@ -140,16 +146,17 @@ def value_iteration(env: Environment, gamma: float, theta: float, max_iterations
     """
     # initialise value if not provided
     if V is None:
-        V = np.zeros(env.n_states)
+        V = np.zeros(env.n_states, dtype=np.float32)
     else:
         V = np.array(V, dtype=float)
 
     # run untill converged or max iterations reached
-    for _ in range(max_iterations):
+    for iter in range(max_iterations):
         delta = 0
 
         for s in range(env.n_states):
             v = V[s]
+            action_values = np.zeros(env.n_actions, dtype=np.float32)
             for a in range(env.n_actions):
                 # compute probabilities and rewards
                 S_ = [s_ for s_ in range(env.n_states)]
@@ -157,34 +164,17 @@ def value_iteration(env: Environment, gamma: float, theta: float, max_iterations
                 R = [env.r(s_, s, a) for s_ in S_]
 
                 # compute value
-                value = sum([p * (r + gamma * V[s_])
-                            for s_, p, r in zip(S_, P, R)])
+                action_values[a] = sum([p * (r + gamma * V[s_])
+                                        for s_, p, r in zip(S_, P, R)])
 
-                # update value if larger
-                if value > V[s]:
-                    V[s] = value
-
-                delta = max(delta, abs(v - V[s]))
+            V[s] = action_values.max()
+            delta = max(delta, abs(v - V[s]))
 
         # check for convergance
-        if delta < theta:
+        if delta <= theta:
             break
 
     # build policy
-    policy = np.zeros(env.n_states, dtype=int)
-    for s in range(env.n_states):
-        for a in range(env.n_actions):
-            # compute probabilities and rewards
-            S_ = [s_ for s_ in range(env.n_states)]
-            P = [env.p(s_, s, a) for s_ in S_]
-            R = [env.r(s_, s, a) for s_ in S_]
+    policy = policy_improvement(env, V, gamma)
 
-            # compute value
-            value = sum([p * (r + gamma * V[s_])
-                        for s_, p, r in zip(S_, P, R)])
-
-            # update policy if larger
-            if value > V[s]:
-                policy[s] = a
-
-    return policy, V
+    return policy, V, iter + 1

@@ -69,9 +69,9 @@ def linear_sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, 
         features = env.reset()
         Q = features.dot(theta)
         a = get_action(Q, e)
-        done = False
 
         # run through episode
+        done = False
         while not done:
             # get action, next state and reward
             features_, r, done = env.step(a)
@@ -85,8 +85,9 @@ def linear_sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, 
             temporal_dif = r + gamma * Q[a_] - Q_a
             theta += lr * temporal_dif * features[a]
 
-            # move feature pointer
+            # move feature and action pointers
             features = features_
+            a = a_
 
     return theta
 
@@ -130,9 +131,9 @@ def linear_q_learning(env, max_episodes, eta, gamma, epsilon, seed=None):
         # reset environment and compute intial q values
         features = env.reset()
         Q = features.dot(theta)
-        done = False
 
         # run through episode
+        done = False
         while not done:
             # get action, next state and reward
             a = get_action(Q, e)

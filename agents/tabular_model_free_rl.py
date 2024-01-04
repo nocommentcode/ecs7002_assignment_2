@@ -111,8 +111,9 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
     Q = np.zeros((env.n_states, env.n_actions))
 
     # epsilon greedy shortcut
-    def get_action(state: int, epsilon: float): return e_greedy(
-        Q, state, epsilon, env.n_actions, random_state)
+    def get_action(state: int, epsilon: float):
+        return e_greedy(
+            Q, state, epsilon, env.n_actions, random_state)
 
     for lr, e in zip(eta, epsilon):
         s = env.reset()
