@@ -1,6 +1,5 @@
 import contextlib
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 from typing import List
@@ -32,3 +31,19 @@ def play(env):
 
         env.render()
         print('Reward: {0}.'.format(r))
+
+
+def compute_episode_returns(episodes: List[List[float]], gamma: float) -> List[float]:
+    returns = []
+
+    for episode in episodes:
+        # returns = discounted sum of rewards
+        rewards = np.array(episode)
+        discount_factors = np.array(
+            [gamma ** i for i in range(len(rewards))])
+        discounted_return = np.sum(rewards * discount_factors)
+
+        # add to list
+        returns.append(discounted_return)
+
+    return returns

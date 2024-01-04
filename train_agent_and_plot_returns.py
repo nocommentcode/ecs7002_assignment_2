@@ -10,26 +10,13 @@ import matplotlib.pyplot as plt
 from typing import List
 import numpy as np
 
+from utils import compute_episode_returns
+
 SEED = 1
 
 
-def compute_episode_returns(episodes: List[List[float]], gamma: float) -> List[float]:
-    returns = []
-
-    for episode in episodes:
-        # returns = discounted sum of rewards
-        rewards = np.array(episode)
-        discount_factors = np.array(
-            [gamma ** i for i in range(len(rewards))])
-        discounted_return = np.sum(rewards * discount_factors)
-
-        # add to list
-        returns.append(discounted_return)
-
-    return returns
-
-
 def plot_episode_returns(returns: List[float], name: str, window_length: int = 20, ax=None) -> None:
+
     if ax is None:
         fig, ax = plt.subplot(1)
 
