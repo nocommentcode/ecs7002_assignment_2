@@ -3,39 +3,14 @@ from environment.FrozenLake import FrozenLake, SMALL_LAKE
 from environment.FrozenLakeImageWrapper import FrozenLakeImageWrapper
 from environment.LinearWrapper import LinearWrapper
 from environment.EpisodeRewardsWrapper import EpisodeRewardsWrapper
-from agents.tabular_model_rl import policy_iteration, value_iteration
 from agents.tabular_model_free_rl import sarsa, q_learning
 from agents.non_tabular_model_free_rl import deep_q_network_learning, linear_sarsa, linear_q_learning
 import matplotlib.pyplot as plt
-from typing import List
 import numpy as np
 
-from utils import compute_episode_returns
+from utils import compute_episode_returns, plot_episode_returns
 
 SEED = 1
-
-
-def plot_episode_returns(returns: List[float], name: str, window_length: int = 20, ax=None) -> None:
-
-    if ax is None:
-        fig, ax = plt.subplot(1)
-
-    N = len(returns)
-    episodes = np.arange(1, N+1)
-
-    ax.plot(episodes, returns, label='Episode Returns', alpha=0.3)
-
-    moving_average_episodes = episodes[window_length-1:]
-    moving_average = np.convolve(returns, np.ones(
-        window_length)/window_length, mode='valid')
-
-    ax.plot(moving_average_episodes,
-            moving_average, label='Moving Average')
-
-    ax.set_title(name)
-    ax.set_xlabel('Episode')
-    ax.set_ylabel('Discounted Return')
-    ax.legend()
 
 
 def run_sarsa(env, ax):

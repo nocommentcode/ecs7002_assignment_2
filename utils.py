@@ -1,4 +1,5 @@
 import contextlib
+from matplotlib import pyplot as plt
 import numpy as np
 
 
@@ -48,8 +49,9 @@ def compute_episode_returns(episodes: List[List[float]], gamma: float) -> List[f
     returns = []
 
     for episode in episodes:
-        # returns = discounted sum of rewards
         rewards = np.array(episode)
+
+        # returns = discounted sum of rewards
         discount_factors = np.array(
             [gamma ** i for i in range(len(rewards))])
         discounted_return = np.sum(rewards * discount_factors)
@@ -58,6 +60,21 @@ def compute_episode_returns(episodes: List[List[float]], gamma: float) -> List[f
         returns.append(discounted_return)
 
     return returns
+
+
+def compute_rolling_average(values: List[float], window_length: int = 20) -> List[int]:
+    """
+    Computes the rolling average of a list of floats
+
+    args:
+        values: list of floats
+        window_length: rolling average windown length
+
+    returns:
+        rolling average
+    """
+    return np.convolve(values, np.ones(
+        window_length)/window_length, mode='valid')
 
 
 def epsilon_greedy(Qs: np.ndarray, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
@@ -82,3 +99,35 @@ def epsilon_greedy(Qs: np.ndarray, epsilon: float, n_actions: int, random_state:
     qmax = np.max(Qs)
     best = [a for a in range(n_actions) if np.allclose(qmax, Qs[a])]
     return random_state.choice(best)
+
+
+def plot_episode_returns(returns: List[float], name: str, label: str = "Moving Average", window_length: int = 20, ax=None) -> None:
+    """
+    Plots the returns (sum of discounted rewards) for each episode during training with a rolling window average
+
+    args:
+        returns: list of return for each episode
+        title: the title of the plot
+        label: the label of the line
+        window_length: the rolling window length
+        ax: optional axis to plot on
+    """
+    # get ax if none provided
+    if ax is None:
+        fig, ax = plt.subplot(1)
+    # compute rolling average
+    N = len(returns)
+    episodes = np.arange(1, N+1)
+
+    moving_average_episodes = episodes[window_length-1:]
+    moving_average = compute_rolling_average(returns)
+
+    # plot moving average returns
+    ax.plot(moving_average_episodes,
+            moving_average, label=label, alpha=0.5)
+
+    # format plot
+    ax.set_title(name)
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Discounted Return')
+    ax.legend()

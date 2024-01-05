@@ -24,3 +24,5 @@
 - **tests:** runs tests for the environment implementation
 - **main:** main function that runs all agents and prints resulting policy and value
 - **count_tabular_model_iterations:** script used for question 1 of the report, logs the number of iterations taken for policy and value iteration to converge
+- **optimise_tabular_model_free:** script used for question 2 of the report, runs a grid search for the learning rate and epsilon values
+- **utils:** utility functions used throughout the code base
