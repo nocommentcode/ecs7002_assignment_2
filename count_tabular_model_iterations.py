@@ -1,4 +1,3 @@
-import numpy as np
 from environment.FrozenLake import FrozenLake
 from environment.FrozenLake import BIG_LAKE
 from agents.tabular_model_rl import policy_iteration, value_iteration

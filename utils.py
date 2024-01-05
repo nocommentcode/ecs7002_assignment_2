@@ -34,6 +34,17 @@ def play(env):
 
 
 def compute_episode_returns(episodes: List[List[float]], gamma: float) -> List[float]:
+    """
+    Computes the episode returns
+    Returns = sum of discounted rewards
+
+    args: 
+        episodes: List of rewards obtained through each episode
+        gamma: discount factor
+
+    returns:
+        list of returns for each episode
+    """
     returns = []
 
     for episode in episodes:

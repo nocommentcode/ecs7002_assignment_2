@@ -1,5 +1,6 @@
-from environment.FrozenLake import FrozenLake, SMALL_LAKE
 import numpy as np
+
+from environment.FrozenLake import FrozenLake, SMALL_LAKE
 
 
 def test_frozen_lake_env_probs():

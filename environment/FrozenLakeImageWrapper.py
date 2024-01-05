@@ -1,5 +1,7 @@
 import numpy as np
 
+from environment.FrozenLake import FrozenLake
+
 
 class FrozenLakeImageWrapper:
     """
@@ -13,29 +15,50 @@ class FrozenLakeImageWrapper:
 
     """
 
-    def __init__(self, env):
+    def __init__(self, env: FrozenLake):
         self.env = env
-
         lake = self.env.lake
-
         self.n_actions = self.env.n_actions
         self.state_shape = (4, lake.shape[0], lake.shape[1])
+        self.state_image = self.build_state_images(lake)
 
-        lake_image = [(lake == c).astype(float) for c in ['&', '#', '$']]
+    def build_state_images(self, lake):
+        """
+        Builds the state images for all states
+        """
+        # dimension 2, 3 and 4
+        lake_image = [(lake == c).astype(float) for c in [
+            self.env.START_SYMBOL, self.env.GOAL_SYMBOL, self.env.HOLE_SYMBOL]]
 
-        self.state_image = {self.env.absorbing_state:
-                            np.stack([np.zeros(lake.shape)] + lake_image)}
-        for state in range(lake.size):
+        state_image = {}
+
+        # build image for each state including absorbing state
+        for state in range(lake.size + 1):
             rows, cols = lake.shape
-            position = np.zeros((rows, cols))
 
-            position[state % rows, state // cols] = 1.0
-            self.state_image[state] = np.stack([position] + lake_image)
+            # 1st dimension
+            agent_image = np.zeros((rows, cols))
+
+            # if not absorbing state set player position to 1
+            if state != self.env.absorbing_state:
+                agent_image[state % rows, state // cols] = 1.0
+
+            # state image is all 4 dimensions
+            state_image[state] = np.stack([agent_image] + lake_image)
+
+        return state_image
 
     def encode_state(self, state):
+        """
+        Encodes the state to an image
+        """
         return self.state_image[state]
 
     def decode_policy(self, dqn):
+        """
+        Decodes the policy so it can be viewed
+        """
+
         states = np.array([self.encode_state(s)
                           for s in range(self.env.n_states)])
         # torch.no_grad omitted to avoid import
