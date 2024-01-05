@@ -6,12 +6,13 @@ from agents.DeepQNetwork import DeepQNetwork
 from agents.ReplayBuffer import ReplayBuffer
 
 
-def e_greedy(Q: np.ndarray, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
+def epsilon_greedy(Q: np.ndarray, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
     """
-    Epsilon greedy policy for linear approximated Q table
+    Epsilon greedy policy for linear approximated Q table.
+    Will break ties randomly to increase exploration
 
     args:
-        Q: the approximate Q-value table for the current state
+        Q: the approximate Q-value table for the current state (numpy array with shape: (n_actions,))
         epsilon: exploration rate
         n_actions: number of actions
         random_state: random state
@@ -36,9 +37,9 @@ def linear_sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, 
 
     Updates weights using tuples of (s, a, r, s_, a_)
 
-    Q(s, a) = theta * Phi(s, a)
-
-    theta <- theta + a * [r + gamma * max_a_(Q(s_, a_)) - Q(s, a)] * Phi(s, a)
+    Update step:
+        Q(s, a) = theta * Phi(s, a)
+        theta <- theta + lr * [ r + gamma * Q(s_, a_) - Q(s, a) ] * Phi(s, a)
 
     args:
         env: the environment
@@ -49,7 +50,7 @@ def linear_sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, 
         seed: random seed
 
     returns:
-        weights of linear approximated Q table
+        weights of linear approximated Q table (numpy array with shape: (n_features,))
     """
     random_state = np.random.RandomState(seed)
 
@@ -61,27 +62,30 @@ def linear_sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, 
     theta = np.zeros(env.n_features)
 
     # epsilon greedy shortcut
-    def get_action(Q: np.ndarray, epsilon: float):
-        return e_greedy(Q, epsilon, env.n_actions, random_state)
+    def e_greedy(Q: np.ndarray, epsilon: float):
+        return epsilon_greedy(Q, epsilon, env.n_actions, random_state)
 
+    # training loop
     for lr, e in zip(eta, epsilon):
         # reset environment and compute intial q values and action
         features = env.reset()
         Q = features.dot(theta)
-        a = get_action(Q, e)
+        a = e_greedy(Q, e)
 
         # run through episode
         done = False
         while not done:
-            # get action, next state and reward
+            # get action, next state features and reward
             features_, r, done = env.step(a)
 
-            # update Q table
+            # update Q table (store original action value first)
             Q_a = Q[a]
             Q = features_.dot(theta)
 
             # update weights using next action
-            a_ = get_action(Q, e)
+            a_ = e_greedy(Q, e)
+
+            # theta <- theta + lr * [ r + gamma * Q(s_, a_) - Q(s, a) ] * Phi(s, a)
             temporal_dif = r + gamma * Q[a_] - Q_a
             theta += lr * temporal_dif * features[a]
 
@@ -99,9 +103,9 @@ def linear_q_learning(env, max_episodes, eta, gamma, epsilon, seed=None):
 
     Updates weights using tuples of (s, a, r, s_)
 
-    Q(s, a) = theta * Phi(s, a)
-
-    theta <- theta + a * [r + gamma * max_a_(Q(s_,)) - Q(s, a)] * Phi(s, a)
+    Update step:
+        Q(s, a) = theta * Phi(s, a)
+        theta <- theta + lr * [ r + gamma * max_a_{ Q(s_,) } - Q(s, a) ] * Phi(s, a)
 
     args:
         env: the environment
@@ -112,7 +116,7 @@ def linear_q_learning(env, max_episodes, eta, gamma, epsilon, seed=None):
         seed: random seed
 
     returns:
-        weights of linear approximated Q table
+        weights of linear approximated Q table (numpy array with shape: (n_features,))
     """
     random_state = np.random.RandomState(seed)
 
@@ -124,8 +128,8 @@ def linear_q_learning(env, max_episodes, eta, gamma, epsilon, seed=None):
     theta = np.zeros(env.n_features)
 
     # epsilon greedy shortcut
-    def get_action(Q: np.ndarray, epsilon: float):
-        return e_greedy(Q, epsilon, env.n_actions, random_state)
+    def e_greedy(Q: np.ndarray, epsilon: float):
+        return epsilon_greedy(Q, epsilon, env.n_actions, random_state)
 
     for lr, e in zip(eta, epsilon):
         # reset environment and compute intial q values
@@ -136,14 +140,14 @@ def linear_q_learning(env, max_episodes, eta, gamma, epsilon, seed=None):
         done = False
         while not done:
             # get action, next state and reward
-            a = get_action(Q, e)
+            a = e_greedy(Q, e)
             features_, r, done = env.step(a)
 
-            # calculate new Q
+            # update Q table (store original action value first)
             Q_a = Q[a]
             Q = features_.dot(theta)
 
-            # update weights
+            # theta <- theta + lr * [ r + gamma * max_a_{ Q(s_,) } - Q(s, a) ] * Phi(s, a)
             temporal_dif = r + gamma * np.max(Q) - Q_a
             theta += lr * temporal_dif * features[a]
 
@@ -168,6 +172,7 @@ def deep_q_network_learning(env: Environment,
     """
     Deep Q Learning control algorithm.
     Trains a Deep Q Network which approximates the Q table
+    Uses a target network for the estimated target to stabilise training.
 
     args:
         env: the environment
@@ -187,14 +192,17 @@ def deep_q_network_learning(env: Environment,
         the trained Deep Q Network
     """
 
-    # initialise replay buffer, networks and epsiolon decay
+    # initialise replay buffer
     random_state = np.random.RandomState(seed)
     replay_buffer = ReplayBuffer(buffer_size, random_state)
 
-    dqn = DeepQNetwork(env, learning_rate, kernel_size, conv_out_channels,
-                       fc_out_features, seed=seed)
-    tdqn = DeepQNetwork(env, learning_rate, kernel_size, conv_out_channels,
-                        fc_out_features, seed=seed)
+    # build networks
+    deep_q_args = (env, learning_rate, kernel_size, conv_out_channels,
+                   fc_out_features, seed)
+    dqn = DeepQNetwork(*deep_q_args)
+    tdqn = DeepQNetwork(*deep_q_args)
+
+    # initialise epsilong decay
     epsilon = np.linspace(epsilon, 0, max_episodes)
 
     # epsilon greedy using q network
@@ -208,6 +216,7 @@ def deep_q_network_learning(env: Environment,
             with torch.no_grad():
                 q = dqn(np.array([state]))[0].numpy()
 
+            # break ties randomly to encourage exploration
             qmax = max(q)
             best = [a for a in range(env.n_actions)
                     if np.allclose(qmax, q[a])]
@@ -218,9 +227,9 @@ def deep_q_network_learning(env: Environment,
     for i, e in enumerate(epsilon):
         # reset environemnt
         s = env.reset()
-        done = False
 
         # run through episode
+        done = False
         while not done:
 
             # get action, next state and reward
@@ -231,7 +240,7 @@ def deep_q_network_learning(env: Environment,
             replay_buffer.append((s, a, r, s_, done))
             s = s_
 
-            # train network
+            # train network from randm batch of transitions
             if len(replay_buffer) >= batch_size:
                 transitions = replay_buffer.draw(batch_size)
                 dqn.train_step(transitions, gamma, tdqn)

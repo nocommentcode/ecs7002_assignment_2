@@ -3,12 +3,12 @@ import numpy as np
 from environment.Environement import Environment
 
 
-def e_greedy(Q: np.ndarray, s: int, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
+def epsilon_greedy(Q: np.ndarray, s: int, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
     """
     Epsilon greedy policy.
 
     args:
-        Q: Q-value table
+        Q: Q-value table (numpy array with shape: (n_states, n_actions))
         s: current state
         epsilon: exploration rate
         n_actions: number of actions
@@ -30,7 +30,8 @@ def sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon
     SARSA Control algorithm.
     Updates Q table using tuples of (s, a, r, s_, a_)
 
-    Q(s, a) <- Q(s, a) + a * [r + gamma * Q(s_, a_) - Q(s, a)]
+    Update step:
+        Q(s, a) <- Q(s, a) + eta * [r + gamma * Q(s_, a_) - Q(s, a)]
 
     args:
         env: the environment
@@ -41,7 +42,10 @@ def sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon
         seed: random seed
 
     returns:
-        policy, value-function
+        A tuple (policy, value)
+        where:
+            policy - the policy after training (numpy array with shape: (n_states,))
+            value - the value-function (numpy array with shape: (n_states,))
     """
     random_state = np.random.RandomState(seed)
 
@@ -53,22 +57,23 @@ def sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon
     Q = np.zeros((env.n_states, env.n_actions))
 
     # epsilon greedy shortcut
-    def get_action(state: int, epsilon: float):
-        return e_greedy(Q, state, epsilon, env.n_actions, random_state)
+    def e_greedy(state: int, epsilon: float):
+        return epsilon_greedy(Q, state, epsilon, env.n_actions, random_state)
 
+    # training loop
     for lr, e in zip(eta, epsilon):
         # get initial state and action
         s = env.reset()
-        a = get_action(s, e)
+        a = e_greedy(s, e)
 
         # run through episode
         done = False
         while not done:
             # get next state, reward and next action
             s_, r, done = env.step(a)
-            a_ = get_action(s_, e)
+            a_ = e_greedy(s_, e)
 
-            # update Q table
+            # Q(s, a) <- Q(s, a) + eta * [r + gamma * Q(s_, a_) - Q(s, a)]
             Q[s, a] += lr * (r + gamma * Q[s_, a_] - Q[s, a])
 
             # move state and action pointers
@@ -87,7 +92,8 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
     Q Learning Control algorithm.
     Updates Q table using tuples of (s, a, r, s_)
 
-    Q(s, a) <- Q(s, a) + a * [r + gamma * max_a_(Q(s_)) - Q(s, a)]
+    Update step:
+        Q(s, a) <- Q(s, a) + a * [r + gamma * max_a_{ Q(s_) } - Q(s, a)]
 
     args:
         env: the environment
@@ -98,7 +104,10 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
         seed: random seed
 
     returns:
-        policy and value-function
+        A tuple (policy, value)
+        where:
+            policy - the policy after training (numpy array with shape: (n_states,))
+            value - the value-function (numpy array with shape: (n_states,))
     """
 
     random_state = np.random.RandomState(seed)
@@ -111,10 +120,11 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
     Q = np.zeros((env.n_states, env.n_actions))
 
     # epsilon greedy shortcut
-    def get_action(state: int, epsilon: float):
-        return e_greedy(
+    def e_greedy(state: int, epsilon: float):
+        return epsilon_greedy(
             Q, state, epsilon, env.n_actions, random_state)
 
+    # training loop
     for lr, e in zip(eta, epsilon):
         s = env.reset()
         done = False
@@ -122,15 +132,14 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
         # run through episode
         while not done:
             # get action, next state and reward
-            a = get_action(s, e)
+            a = e_greedy(s, e)
             s_, r, done = env.step(a)
 
-            # update Q table
-            # print(r, gamma, np.max(Q[s_]), Q[s, a])
+            # Q(s, a) <- Q(s, a) + a * [r + gamma * max_a_{ Q(s_) } - Q(s, a)]
             Q[s, a] += lr * (r + gamma * np.max(Q[s_]) - Q[s, a])
 
             # update state pointer
-            s_ = s
+            s = s_
 
     # compute policy and value-function from Q table
     policy = Q.argmax(axis=1)

@@ -55,7 +55,7 @@ def main():
 
     print('## Linear Sarsa')
 
-    parameters = linear_sarsa(linear_env, max_episodes+5000, eta=0.5, gamma=gamma,
+    parameters = linear_sarsa(linear_env, max_episodes, eta=0.5, gamma=gamma,
                               epsilon=0.5, seed=seed)
     policy, value = linear_env.decode_policy(parameters)
     linear_env.render(policy, value)
