@@ -1,28 +1,7 @@
 from typing import Tuple
 import numpy as np
 from environment.Environement import Environment
-
-
-def epsilon_greedy(Q: np.ndarray, s: int, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
-    """
-    Epsilon greedy policy.
-
-    args:
-        Q: Q-value table (numpy array with shape: (n_states, n_actions))
-        s: current state
-        epsilon: exploration rate
-        n_actions: number of actions
-        random_state: random state
-
-    returns:
-        action
-    """
-    # explore
-    if random_state.rand() < epsilon:
-        return random_state.choice(n_actions)
-
-    # exploit
-    return np.argmax(Q[s, :])
+from utils import epsilon_greedy
 
 
 def sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon: float, seed: int = None) -> Tuple[np.ndarray, np.ndarray]:
@@ -58,7 +37,7 @@ def sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon
 
     # epsilon greedy shortcut
     def e_greedy(state: int, epsilon: float):
-        return epsilon_greedy(Q, state, epsilon, env.n_actions, random_state)
+        return epsilon_greedy(Q[state], epsilon, env.n_actions, random_state)
 
     # training loop
     for lr, e in zip(eta, epsilon):
@@ -122,7 +101,7 @@ def q_learning(env: Environment, max_episodes: int, eta: float, gamma: float, ep
     # epsilon greedy shortcut
     def e_greedy(state: int, epsilon: float):
         return epsilon_greedy(
-            Q, state, epsilon, env.n_actions, random_state)
+            Q[state], epsilon, env.n_actions, random_state)
 
     # training loop
     for lr, e in zip(eta, epsilon):

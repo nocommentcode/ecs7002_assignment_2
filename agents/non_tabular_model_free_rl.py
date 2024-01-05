@@ -4,30 +4,7 @@ import numpy as np
 from environment.Environement import Environment
 from agents.DeepQNetwork import DeepQNetwork
 from agents.ReplayBuffer import ReplayBuffer
-
-
-def epsilon_greedy(Q: np.ndarray, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
-    """
-    Epsilon greedy policy for linear approximated Q table.
-    Will break ties randomly to increase exploration
-
-    args:
-        Q: the approximate Q-value table for the current state (numpy array with shape: (n_actions,))
-        epsilon: exploration rate
-        n_actions: number of actions
-        random_state: random state
-
-    returns:
-        action
-    """
-    # explore
-    if random_state.rand() < epsilon:
-        return random_state.choice(n_actions)
-
-    # exploit (break ties randomly)
-    qmax = np.max(Q)
-    best = [a for a in range(n_actions) if np.allclose(qmax, Q[a])]
-    return random_state.choice(best)
+from utils import epsilon_greedy
 
 
 def linear_sarsa(env: Environment, max_episodes: int, eta: float, gamma: float, epsilon: float, seed: int = None) -> np.ndarray:

@@ -8,7 +8,7 @@ from agents.non_tabular_model_free_rl import deep_q_network_learning, linear_sar
 
 
 def main():
-    seed = 1
+    seed = 0
     lake = SMALL_LAKE
 
     env = FrozenLake(lake, slip=0.1, max_steps=16, seed=seed)

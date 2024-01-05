@@ -58,3 +58,27 @@ def compute_episode_returns(episodes: List[List[float]], gamma: float) -> List[f
         returns.append(discounted_return)
 
     return returns
+
+
+def epsilon_greedy(Qs: np.ndarray, epsilon: float, n_actions: int, random_state: np.random.RandomState) -> int:
+    """
+    Epsilon greedy policy.
+
+    args:
+        Qs: Q-value table for the current state (numpy array with shape: (n_actions,))
+        epsilon: exploration rate
+        n_actions: number of actions
+        random_state: random state
+
+    returns:
+        action
+    """
+    # explore
+    if random_state.rand() < epsilon:
+        return random_state.choice(n_actions)
+
+    # exploit
+    # break ties randomly by selecting random action that is close to max
+    qmax = np.max(Qs)
+    best = [a for a in range(n_actions) if np.allclose(qmax, Qs[a])]
+    return random_state.choice(best)

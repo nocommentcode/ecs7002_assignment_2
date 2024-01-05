@@ -90,6 +90,9 @@ class FrozenLake(Environment):
         args:
             n_states: the number of states
             n_actions: the number of allowable actions
+
+        returns:
+            transition_probabilities (numpy array with shape: (n_states, n_states, n_actions))
         """
         # transition probability (next state, state, action)
         transitions = np.zeros((n_states, n_states, n_actions))
