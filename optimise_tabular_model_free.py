@@ -18,14 +18,14 @@ GAMMA = 0.9
 THETA = 0
 MAX_EPISODES = 4000
 THRESHOLD = 0.95
+ENV_MAX_STEPS = 100
 
 # paramters we will search through
-# [1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2]
 LR = [1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0.1]
-EPSILON = [1, 0.8, 0.6, 0.4, 0.2, 0.1, 0.01]  # [1, 0.9, 0.7, 0.5, 0.3, 0.1]
+EPSILON = [1, 0.8, 0.6, 0.4, 0.2, 0.1, 0.01]
 
 # lakes we are searching on
-LAKE_NAMES = ["Small lake", "Big lake"]
+LAKE_NAMES = ["Big lake"]  # , "Big lake"]
 NAME_TO_LAKE = {
     "Small lake": SMALL_LAKE,
     "Big lake": BIG_LAKE
@@ -50,7 +50,7 @@ def build_env(lake, wrap=False):
     returns:
         the environment
     """
-    env = FrozenLake(lake, slip=0.1, max_steps=100, seed=SEED)
+    env = FrozenLake(lake, slip=0.1, max_steps=ENV_MAX_STEPS, seed=SEED)
     if not wrap:
         return env
 
@@ -202,7 +202,16 @@ def print_best_combination():
 
 def plot_best_combination_returns():
     fig, lake_axs = plt.subplots(1, len(LAKE_NAMES))
+
+    if len(LAKE_NAMES) == 1:
+        lake_axs = np.array([lake_axs])
+
     for lake_name, ax in zip(LAKE_NAMES, lake_axs):
+        # plot optimal return as horizontal line
+        optimal_return = get_optimal_return(NAME_TO_LAKE[lake_name])
+        ax.plot(np.arange(MAX_EPISODES), [optimal_return for _ in range(MAX_EPISODES)],
+                color='red', label="Optimal")
+
         for algorithm_name in ALGORITHM_NAMES:
             # load results and returns
             results_file_name, returns_filename = get_filenames(
@@ -221,10 +230,10 @@ def plot_best_combination_returns():
             # find worse and plot
             min_returns = returns.min(axis=2)
             worse_lr_idx, worse_epsilon_idx = np.unravel_index(
-                min_returns.agmin(), results.shape)
+                min_returns.argmin(), results.shape)
             worse_returns = returns[worse_lr_idx, worse_epsilon_idx]
 
-            plot_episode_returns(worse_returns, lake_name,
+            plot_episode_returns(worse_returns, f"{lake_name} best and worse parameters",
                                  f"{algorithm_name} lr:{LR[worse_lr_idx]}, eps:{EPSILON[worse_epsilon_idx]}", ax=ax)
 
     fig.tight_layout()
@@ -232,7 +241,9 @@ def plot_best_combination_returns():
 
 
 def display_results_heatmap():
-    fig, ax = plt.subplots(2, 2)
+    fig, ax = plt.subplots(len(LAKE_NAMES), len(ALGORITHM_NAMES))
+    if len(LAKE_NAMES) == 1:
+        ax = ax[np.newaxis, :]
 
     # all combination of algorithms and lakes
     for li, lake_name in enumerate(LAKE_NAMES):
