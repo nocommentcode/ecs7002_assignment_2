@@ -25,7 +25,7 @@ LR = [1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0.1]
 EPSILON = [1, 0.8, 0.6, 0.4, 0.2, 0.1, 0.01]
 
 # lakes we are searching on
-LAKE_NAMES = ["Big lake"]  # , "Big lake"]
+LAKE_NAMES = ["Small lake"]  # , "Big lake"]
 NAME_TO_LAKE = {
     "Small lake": SMALL_LAKE,
     "Big lake": BIG_LAKE
