@@ -101,7 +101,7 @@ def epsilon_greedy(Qs: np.ndarray, epsilon: float, n_actions: int, random_state:
     return random_state.choice(best)
 
 
-def plot_episode_returns(returns: List[float], name: str, label: str = "Moving Average", window_length: int = 20, ax=None) -> None:
+def plot_episode_returns(returns: List[float], name: str, label: str = None, window_length: int = 20, ax=None, alpha=0.5) -> None:
     """
     Plots the returns (sum of discounted rewards) for each episode during training with a rolling window average
 
@@ -124,10 +124,11 @@ def plot_episode_returns(returns: List[float], name: str, label: str = "Moving A
 
     # plot moving average returns
     ax.plot(moving_average_episodes,
-            moving_average, label=label, alpha=0.5)
+            moving_average, label=label, alpha=alpha)
 
     # format plot
     ax.set_title(name)
     ax.set_xlabel('Episode')
-    ax.set_ylabel('Discounted Return')
-    ax.legend()
+    ax.set_ylabel('Moving average of discounted Return')
+    if label is not None:
+        ax.legend()
