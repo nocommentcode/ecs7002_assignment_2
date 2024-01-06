@@ -25,7 +25,7 @@ class LinearWrapper:
         """
         features = np.zeros((self.n_actions, self.n_features))
 
-        # sets the features for this state and all actions to 1
+        # sets the features for this state and action combination to 1
         for a in range(self.n_actions):
             i = np.ravel_multi_index((s, a), (self.n_states, self.n_actions))
             features[a, i] = 1.0
