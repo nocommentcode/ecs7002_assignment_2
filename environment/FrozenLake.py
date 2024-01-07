@@ -155,7 +155,7 @@ class FrozenLake(Environment):
 
         n_col, n_rows = self.lake.shape
 
-        # find collumn and row index of all remaining states
+        # find column and row index of all remaining states
         col_idx = remaining_states % n_col
         row_idx = remaining_states // n_rows
 
@@ -224,7 +224,7 @@ class FrozenLake(Environment):
         returns:
             transition probability
         """
-        # return pre computed probability
+        # return computed state-transition probability
         return self.transitions[next_state, state, action]
 
     def is_goal(self, state: int):
