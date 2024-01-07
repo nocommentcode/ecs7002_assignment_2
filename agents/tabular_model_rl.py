@@ -37,7 +37,7 @@ def policy_evaluation(env: Environment, policy: np.ndarray, gamma: float, theta:
     # initialise value to 0 for all states
     V = np.zeros(env.n_states, dtype=float)
 
-    # Policy evaulation loop
+    # policy evaulation loop
     for iter in range(max_iterations):
         delta = 0
 
@@ -142,7 +142,7 @@ def policy_iteration(env: Environment, gamma: float, theta: float, max_iteration
     else:
         policy = np.array(policy, dtype=int)
 
-    # Interleave policy evaluation and policy improvement
+    # interleave policy evaluation and policy improvement
     V, iters = policy_evaluation(env, policy, gamma, theta, max_iterations)
     improved_policy = policy_improvement(env, V, gamma)
 
